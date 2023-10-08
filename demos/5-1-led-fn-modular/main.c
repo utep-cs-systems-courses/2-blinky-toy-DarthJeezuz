@@ -5,8 +5,8 @@
 
 int main(void) {
   P1DIR |= LEDS;
-  P1OUT &= ~LED_GREEN;
-  P1OUT |= LED_RED;
+  P1OUT ^= ~LED_GREEN;
+  P1OUT ^= LED_RED;
 
   configureClocks();		/* setup master oscillator, CPU & peripheral clocks */
   enableWDTInterrupts();	/* enable periodic interrupt */
@@ -17,9 +17,11 @@ int main(void) {
 void greenControl(int on)
 {
   if (on) {
-    P1OUT |= LED_GREEN;
+    P1OUT ^= LED_GREEN;
+    P1OUT ^= LED_RED;
   } else {
     P1OUT &= ~LED_GREEN;
+    P1OUT ^= LED_RED;
   }
 }
 
@@ -39,7 +41,7 @@ void blinkUpdate() // called every 1/250s to blink with duty cycle 1/blinkLimit
 void oncePerSecond() // repeatedly start bright and gradually lower duty cycle, one step/sec
 {
   blinkLimit ++;  // reduce duty cycle
-  if (blinkLimit >= 8)  // but don't let duty cycle go below 1/7.
+  if (blinkLimit >= 50)  // but don't let duty cycle go below 1/7.
     blinkLimit = 0;
 }
 
