@@ -1,0 +1,121 @@
+#include <msp430.h>
+#include "buzzer.h"
+#include "libTimer.h"
+#define SW1 BIT3
+#define SW2 BIT4
+#define SW3 BIT5
+#define RED_LED BIT0
+#define GREEN_LED BIT6
+
+void configureClocks();
+void configureButtons();
+void configureLEDs();
+void klaxon();
+void euro();
+void tetris();
+
+int main(){
+  WDTCTL = WDTPW | WDTHOLD;
+  configureClocks();
+  buzzer_init();
+  configureButtons();
+  configureLEDs();
+  __enable_interrupt();
+  
+  or_sr(0x18);
+  //  while(1){
+    // __bis_SR_register(LPM0_bits);
+    //  }
+  // buzzer_set_period(1000); //start buzzing 2MHz/1000 = 2000kHz
+
+  // or_sr(0x18);  // CPU off, GIE on
+}
+#pragma vector=PORT1_VECTOR
+__interrupt void Port_1(){
+  if(P1IFG & SW1){
+    P1IFG &= ~SW1;
+    klaxon();
+  }
+  if(P1IFG &= SW2){
+    P1IFG &= ~SW2;
+    euro();
+  }
+  if(P1IFG &= SW3){
+    P1IFG &= ~SW3;
+    tetris();
+  }
+}
+/* void configureClocks(){ */
+/*   if(CALBC1_1MHZ == 0xFF || CALDCO_1MHZ == 0xFF){ */
+/*     while(1); */
+/*   } */
+/*   // set DCO to 1MHz */
+/*   BCSCTL1 = CALBC1_1MHZ; */
+/*   DCOCTL = CALDCO_1MHZ; */
+/*   BCSCTL3 |= LFXT1S_2; // SET ACLK TO USE VLO */
+/* } */
+
+void configureButtons(){
+  P1REN |= SW1 | SW2 | SW3;
+  P1OUT |= SW1 | SW2 | SW3;
+  P1IE |= SW1 | SW2 | SW3;
+  P1IES |= SW1 | SW2 | SW3;
+  P1IFG &= ~(SW1 | SW2 | SW3);
+}
+
+void configureLEDs(){
+  P1DIR |= RED_LED | GREEN_LED;
+  P1OUT &= ~(RED_LED | GREEN_LED);
+}
+
+void delay_cycles(unsigned int cycles){
+  while(cycles--){
+    __delay_cycles(1);
+  }
+}
+void klaxon() {
+
+  int notes[] = {523, 587, 659, 698, 784}; // Example notes (adjust as needed)
+  int durations[] = {200, 200, 200, 200, 200}; // Example note durations
+
+  for (int i = 0; i < sizeof(notes) / sizeof(notes[0]); i++) {
+    buzzer_set_period(notes[i]);
+    delay_cycles(1000 * durations[i]); // Delay between notes
+    buzzer_set_period(0); // Turn off the buzzer
+    delay_cycles(1000); // Short pause between notes
+  }
+}
+
+void euro() {
+
+  int notes[] = {659, 0, 659, 0, 659, 0, 523, 0, 587, 0, 659, 0, 784}; // Example notes (adjust as needed)
+  int durations[] = {250, 50, 250, 50, 250, 50, 250, 50, 250, 50, 250, 50, 500}; // Example note durations
+  for (int i = 0; i < sizeof(notes) / sizeof(notes[0]); i++) {
+    if (notes[i] == 0) {
+      buzzer_set_period(0);
+    } else {
+      buzzer_set_period(notes[i]);
+    }
+    delay_cycles(1000 * durations[i]); // Delay between notes
+  }
+}
+
+void tetris() {
+  int tetris_melody[] = {659, 0, 622, 0, 659, 0, 622, 0, 659, 0, 494, 0, 587, 0, 784, 0,
+			 392, 0, 392, 0, 784, 0, 739, 0, 698, 0, 659, 0, 587, 0, 659, 0,
+			 587, 0, 523, 0, 494, 0, 523, 0, 392, 0, 392, 0, 784, 0, 739, 0,
+			 698, 0, 659, 0, 587, 0, 659, 0, 587, 0, 523, 0, 494, 0, 523, 0};
+  int tetris_tempo[] = {16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 8, 8,
+			16, 16, 16, 16, 8, 8, 16, 16, 16, 16, 16, 16, 16, 16, 8, 8,
+			16, 16, 16, 16, 8, 8, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16,
+			16, 16, 16, 16, 8, 8, 16, 16, 16, 16, 8, 8};
+
+  for (int i = 0; i < sizeof(tetris_melody) / sizeof(tetris_melody[0]); i++) {
+    if (tetris_melody[i] == 0) {
+      buzzer_set_period(0);
+    } else {
+      buzzer_set_period(tetris_melody[i]);
+    }
+    delay_cycles(1000 * tetris_tempo[i]); // Delay between notes
+  }
+}
