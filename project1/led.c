@@ -1,5 +1,6 @@
 #include <msp430.h>
 #include "led.h"
+#include "switches.h"
 
 unsigned char red_on = 0, green_on = 0;
 unsigned char led_changed = 0;
