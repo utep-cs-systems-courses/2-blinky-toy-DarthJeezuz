@@ -3,9 +3,7 @@
 #include "led.h"
 
 char switch_state_down, switch_state_changed; /* effectively boolean */
-static char
-
-switch_update_interrupt_sense(){
+static char switch_update_interrupt_sense(){
   char p1val = P1IN;
   /* update switch interrupt to detect changes from current buttons */
   P1IES |= (p1val & SWITCHES);/* if switch up, sense down */
