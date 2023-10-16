@@ -13,7 +13,7 @@ AS             = msp430-elf-as
 all: siren.elf
 
 #additional rules for files
-siren.elf: ${COMMON_OBJECTS} sirenMain.o lib/libTimer.a
+siren.elf: ${COMMON_OBJECTS} buzzer.o sirenMain.o lib/libTimer.a
 	${CC} ${CFLAGS} ${LDFLAGS} -o $@ $^
 
 load: siren.elf

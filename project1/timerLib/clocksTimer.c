@@ -34,5 +34,3 @@ void timerAUpmode()
   //  Mode Control 1: continuously 0...CCR0
   TACTL = TASSEL_2 + MC_1;   
 }
-
-
