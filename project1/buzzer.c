@@ -27,9 +27,9 @@ void buzzer_set_period(unsigned int cycles) /* buzzer clock = 2MHz.  (period of 
   CCR1 = cycles >> 1;/* one half cycle */
 }
 void buzzer_set_frequency(float frequency){
-  unsigned int period = (unsigned int)(10000000 / frequency); // calcualte period
+  unsigned int period = (unsigned int)(16000000 / frequency); // calcualte period
   TACCR0 = period; // set period for given frequency
-  //buzzer_set_period(period);
+  buzzer_set_period(period);
 }
 void buzzer_off(){
   TACCR1 = 0;
