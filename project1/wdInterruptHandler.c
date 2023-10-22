@@ -1,12 +1,12 @@
 #include <msp430.h>
 #include "stateMachines.h"
 
+// intended for songs @ 120 bmp
 void
-__interrupt_vec(WDT_VECTOR) WDT(){/* 250 interrupts/sec */
-
-  static char blink_count = 0;
-  if (++blink_count == 90) {//originally 125
-    state_advance();
-    blink_count = 0;
+__interrupt_vec(WDT_VECTOR) WDT(){ /* 250 interrupts / sec */
+  static char beat_count = 0;
+  if(++beat_count == 125){  /* play beat at every 0.5 seconds */
+    play_beat();
+    beat_count = 0;
   }
 }

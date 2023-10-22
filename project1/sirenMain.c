@@ -1,27 +1,22 @@
 #include <msp430.h>
-//#include "led.h"
+#include "led.h"
 #include "buzzer.h"
 #include "libTimer.h"
-//#include "switches.h"
-#define RED BIT0
-#define GREEN BIT6
-#define LEDS (BIT0 | BIT6)
-#define SW1 BIT3
-#define SWITCHES SW1
-#define c 3824
-#define cS 3608
-#define d 3405
-#define dS 3214
-#define e 3034
-#define f 2863
-#define fS 2703
-#define g 2551
-#define gS 2408
-#define a 2273
-#define aS 2145
-#define b 2025
+#include "switches.h"
+int c = 3824;
+int cS =  3608;
+int d =  3405;
+int dS = 3214;
+int e = 3034;
+int f = 2863;
+int fS = 2703;
+int g = 2551;
+int gS = 2408;
+int a = 2273;
+int aS = 2145;
+int b = 2025;
 
-int melody[] = {440, 494, 523, 659, 668, 780, 880, 955, 1025, 2432, 2894, 3482, 5245, 6983};
+int melody[] = {3824, 3608, 3405, 3214, 3034, 2863, 2703, 2551, 2408, 2273, 2145, 2025};
 int melody_length = sizeof(melody);
 
 void tone(int tone, int duration){
@@ -36,15 +31,8 @@ void tone(int tone, int duration){
 int main(void){
   configureClocks();
   buzzer_init();
-
-  
-  P1DIR |= LEDS;
-  P1OUT &= ~LEDS;
-  P1REN |= SWITCHES;
-  P1IE |= SWITCHES;
-  P1OUT |= SWITCHES;
-  P1DIR &= ~SWITCHES;
-
+  led_init();
+  switch_init();
   or_sr(0x18);
 }
 void euroSiren(){
@@ -73,28 +61,38 @@ void euroSiren(){
     __delay_cycles(350000);
   }
 }
-void switch_interrupt_handler(){
-  char p1val = P1IN;
-
-  P1IES |= (p1val & SWITCHES);
-  P1IES &= (p1val | ~SWITCHES);
-  if(p1val & SW1){
-    euroSiren();
-    //play_melody();
-  }
-}
-void __interrupt_vec(PORT1_VECTOR) Port_1(){
-  if(P1IFG & SWITCHES){
-    P1IFG &= ~SWITCHES;
-    switch_interrupt_handler();
-  }
-}
 
 void play_melody(){
+  buzzer_set_volume(100);
   for(int i = 0; i < melody_length; i++){
     buzzer_set_period(melody[i]);
-    __delay_cycles(1000000);
+    __delay_cycles(100000000);
     buzzer_set_period(0);
     __delay_cycles(1000000);
   }
+}
+void sallys_song(){
+  int ss1[] =  {e, g, a, b, e, g, g, e, f, f, f, a };
+  int ss2[] =  {b, c, a, fS, dS, dS, e, e, b};
+  int ss3[] =  {b, c, d, g, a, a, b, a, a, a};
+  int ss4[] =  {a, b, c, c, a, fS, dS, dS, e};
+  int ss5[] =  {e, b, b, c, d, g, a, a, b, a};
+  int ss6[] =  {a, a, a, b, c, c, c, c, b};
+  int ss7[] =  {b, fS, g, a, a, g, c, a, f, e};
+  int *ssPointer[7] = {ss1, ss2, ss3, ss4, ss5, ss6, ss7};
+  int sizeOfEachRow[7] = {12, 9, 10, 9, 10, 9, 10};
+  int z = 0;
+  for(int k = 0; k < 2; k++){
+    for(unsigned int i = 0; i < 7; i++){
+      int *ptr = ssPointer[i];
+      for(unsigned int j = 0; j < sizeOfEachRow[z]; j++){
+	buzzer_set_period((unsigned int) *ptr);
+	__delay_cycles(10000000); // 10 Mil near-perfect beat
+	buzzer_set_period(0);
+	__delay_cycles(1000000);
+	ptr++;
+      }
+      z++;
+    }
+  } //end of 1st for loop
 }
