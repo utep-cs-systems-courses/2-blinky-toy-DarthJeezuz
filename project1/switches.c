@@ -42,7 +42,8 @@ switch_interrupt_handler(){
   if(p1val & SW0){
     //euroSiren();
     //play_melody();
-    sallys_song();
+    // sallys_song();
+    play_ss();
   }
   else if(p2val & SW1){
     //something

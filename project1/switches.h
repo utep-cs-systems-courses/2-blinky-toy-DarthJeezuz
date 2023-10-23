@@ -11,5 +11,5 @@
 void switch_init();
 void switch_interrupt_handler();
 extern char switch_state_down, switch_state_down_xra, switch_state_changed; /* effectively boolean */
-
+//extern int song_index, song_playing;
 #endif // included
