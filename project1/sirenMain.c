@@ -3,50 +3,57 @@
 #include "buzzer.h"
 #include "libTimer.h"
 #include "switches.h"
-const int c = 3824;
-const int cS =  3608;
-const int d =  3405;
-const int dS = 3214;
-const int e = 3034;
-const int f = 2863;
-const int fS = 2703;
-const int g = 2551;
-const int gS = 2408;
-const int a = 2273;
-const int aS = 2145;
-const int b = 2025;
+
+const float dS = 3214;
+const float e = 3034;
+const float f = 2863;
+const float fS = 2703;
+const float g = 2551;
+const float gS = 2408;
+const float a = 2273;
+const float aS = 2145;
+const float b = 2025;
+const float c = 1912;
+const float cS = 1804;
+const float d = 1702.5;
+const float eN = 1517.0;
+const float w = 0.0;
 
 volatile int song_index = 0;
 volatile int song_playing = 0;
-int melody[] = {3824, 3608, 3405, 3214, 3034, 2863, 2703, 2551, 2408, 2273, 2145, 2025};
+int melody[] = {dS, e, f, fS, g, gS, a, aS, b, c, cS, d};
 int melody_length = sizeof(melody);
-const int sallys_song[] = {e, 0, g, 0, a, 0, b, 0, e, 0, g, 1, e, 0, f, 1, f, 0, a, 0, b, 0, c, 0, a, 0, fS, 0, dS, 1, e, 1, b, 0, b, 0, c, 0, d, 0, g, 0, a, 1, b, 0, a, 1, a, 0, a, 0, b, 0, c, 0, c, 0, a, 0, fS, 0, dS, 1, e, 1, e, 0, b, 0, b, 0, c, 0, d, 0, g, 0, a, 1, b, 0, a, 1, a, 0, a, 1, b, 0, c, 1, c, 1, b, 1, b, 0, fS, 0, g, 0, a, 0, a, 0, g, 0, c, 0, a, 0, f, 0, e, 1, 0, 0};
+const int sallys_song[] = {e, 0, g, 0, a, 0, b, 0, e, 0, g, 0, e, 1, f, 2, f, 0, w, 0, w, 0, f, 0, a, 0, b, 0, c, 0, a, 0, fS, 0, dS, 0, e, 2, e, 0, w, 0, w, 0, b, 0, b, 0, c, 0, d, 0, g, 0, a, 0, b, 0, a, 2, a, 0, w, 0, w, 0, a, 0, a, 0, b, 0, c, 0, a, 0, fS, 0, dS, 0, e, 2, e, 0, w, 0, w, 0, b, 0, b, 0, c, 0, d, 0, g, 0, a, 0, b, 0, a, 2, a, 0, w, 0, w, 0, a, 0, b, 0, c, 0, c, 0, b, 0, w, 0, w, 0, fS, 0, g, 0, a, 0, a, 2, g, 2, g, 0, w, 0, w, 0, w, 0, c, 0, a, 0, f, 0, e, 0, w, 0, w, 0, e, 0, dS, 0, e, 0, fS, 0, g, 0, e, 2, e, 0, w, 0, w, 0, e, 0, dS, 0, e, 0, fS, 0, g, 0, e, 2, e, 0, w, 0, w, 0, w, 0,};
 
 // intended for songs @ 120 bmp
 void
 __interrupt_vec(WDT_VECTOR) WDT(){ /* 250 interrupts / sec */
   static char beat_count = 0;
-  if(++beat_count == 125 && song_playing){  /* typical target_tempo = 125  play beat at every 0.5 seconds */
-    int freq = sallys_song[song_index];
-    int duration = sallys_song[song_index + 1];
-
-    if(freq == 0){
-      // stop
-      buzzer_set_period(0);
-      song_playing = 0;
-      song_index = 0;
-    }else{
-      buzzer_set_period(freq);
-      /* if(duration == 0){   // stop the note */
-      /* 	__delay_cycles(10000000); */
-      /* 	buzzer_set_period(0); */
-      /* }  // otherwise hold the note */
-    beat_count = 0;
-    song_index += 2;
-    
+  static char ext = 0; // flag for extending note
+  if(beat_count == 124 && song_playing && ext == 0){
+    buzzer_set_period(0);
+    ext = 0;
   }
+  if(++beat_count == 125 && song_playing){  /* typical target_tempo = 125  play beat at every 0.5 seconds */
+    float freq = sallys_song[song_index];
+    int duration = sallys_song[song_index + 1];  
+    if(duration == 0){  // typical tempo
+      buzzer_set_period(freq);
+    }
+    else if(duration == 1){  // 8th note (small pause just b4 note)
+      __delay_cycles(500000);
+      buzzer_set_period(freq);
+    }
+    else if(duration == 2){  // note must be extended
+      buzzer_set_period(freq);
+      ext = 1;
+    }
+    beat_count = 0;
+    song_index += 2;    
+  }
+  
 }
-}
+
 void play_ss(){
   song_playing = 1;
   song_index = 0;
@@ -114,12 +121,12 @@ void euroSiren(){
 /*     } */
 /*   } //end of 1st for loop */
 /* } */ 
-/* void play_melody(){ */
-/*   buzzer_set_volume(100); */
-/*   for(int i = 0; i < melody_length; i++){ */
-/*     buzzer_set_period(melody[i]); */
-/*     __delay_cycles(100000000); */
-/*     buzzer_set_period(0); */
-/*     __delay_cycles(1000000); */
-/*   } */
-/* } */
+void play_melody(){
+  buzzer_set_volume(100);
+  for(int i = 0; i < melody_length; i++){
+    buzzer_set_period(melody[i]);
+    __delay_cycles(100000000);
+    buzzer_set_period(0);
+    __delay_cycles(1000000);
+  }
+}
