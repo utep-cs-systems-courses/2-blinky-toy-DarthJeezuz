@@ -40,16 +40,16 @@ switch_interrupt_handler(){
   switch_state_changed = 1;
   led_update();
   if(p1val & SW0){
-    //euroSiren();
+    euroSiren();
     //play_melody();
-    // sallys_song();
-    play_ss();
+    
+    play_s(2);
   }
   else if(p2val & SW1){
-    //something
+    play_s(1);
   }
   else if(p2val & SW2){
-    //something
+    play_s(2);
   }
   else if(p2val & SW3){
     //something
