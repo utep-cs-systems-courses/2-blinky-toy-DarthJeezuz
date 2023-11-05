@@ -9,7 +9,8 @@
 #define ALLSWITCHES SW0 | SWITCHES
 
 void switch_init();
-void switch_interrupt_handler();
+void switch_interrupt_handler_port1();
+void switch_interrupt_handler_port2();
 extern char switch_state_down, switch_state_down_xra, switch_state_changed; /* effectively boolean */
 //extern int song_index, song_playing;
 #endif // included

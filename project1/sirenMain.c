@@ -3,9 +3,21 @@
 #include "buzzer.h"
 #include "libTimer.h"
 #include "switches.h"
+
+const float ASS = 8580;
+const float GSS = 9632;
+const float DS = 6428;
+const float E = 6068;
+const float F = 5726;
+const float FS = 5406;
 const float G = 5102;
+const float GS = 4816;
+const float AS = 4290; // B-flat equivalent
 const float A = 4546;
 const float B = 4050;
+const float C_ = 3824;
+const float CS = 3608;
+const float D = 3404;
 const float dS = 3214;
 const float e = 3034;
 const float f = 2863;
@@ -20,6 +32,7 @@ const float cS = 1804;
 const float d = 1702.5;
 const float eN = 1517.0;
 const float fN = 1431.5;
+const float aN = 1136.5;
 const float cN = 956;
 const float dN = 851.25;
 
@@ -27,43 +40,52 @@ const float w = 0.0;
 
 volatile int song_index = 0;
 volatile int song_playing = 0;
-char ss = 0;
-char mulan = 0;
-int melody[] = {dS, e, f, fS, g, gS, a, aS, b, c, cS, d};
-int song[] = {};
-int melody_length = sizeof(melody);
-const int sallys_song[] = {e, 0, g, 0, a, 0, b, 0, e, 0, g, 0, e, 1, f, 2, f, 0, w, 0, w, 0, f, 0, a, 0, b, 0, c, 0, a, 0, fS, 0, dS, 0, e, 2, e, 0, w, 0, w, 0, b, 0, b, 0, c, 0, d, 0, g, 0, a, 0, b, 0, a, 2, a, 0, w, 0, w, 0, a, 0, a, 0, b, 0, c, 0, a, 0, fS, 0, dS, 0, e, 2, e, 0, w, 0, w, 0, b, 0, b, 0, c, 0, d, 0, g, 0, a, 0, b, 0, a, 2, a, 0, w, 0, w, 0, a, 0, b, 0, c, 0, c, 0, b, 0, w, 0, w, 0, fS, 0, g, 0, a, 0, a, 2, g, 2, g, 0, w, 0, w, 0, w, 0, c, 0, a, 0, f, 0, e, 0, w, 0, w, 0, e, 0, dS, 0, e, 0, fS, 0, g, 0, e, 2, e, 0, w, 0, w, 0, e, 0, dS, 0, e, 0, fS, 0, g, 0, e, 2, eN, 0, w, 0, w, 0, w, 0,};
-const int reflection_mulan[] = {B, 0, c, 0, d, 2, w, 0, w, 0, B, 0, c, 0, d, 3, d, 0, g, 2,        B, 0, d, 0, c, 3, B, 0, A, 2, c, 0, c, 0, c, 3, d, 0, B, 0, A, 2,                                  B, 0, c, 0, d, 2, B, 0, c, 0, d, 0, g, 0, d, 0, g, 0, a, 2, w, 0, w, 0,                            B, 0, c, 0, d, 2, w, 0, B, 0, c, 0, d, 0, d, 2, g, 0, B, 0, d, 0, c, 0, B, 3, A, 2, w, 0, w, 0,    c, 0, c, 0, c, 0, d, 0, B, 0, A, 0, G, 2, w, 0,                                                    a, 2, a, 2, g, 0, a, 2, b, 0, g, 2,                                                                fS, 2, g, 0, e, 2, d, 2, g, 2, c, 2, w, 0, w, 0,                                                   B, 2, d, 0, g, 0, b, 3, b, 3, cN, 0, a, 0, g, 0, a, 2, a, 2, a, 2, w, 0, w, 0,                     a, 2, a, 0, g, 0, a, 0, b, 2, g, 2,                                                                fS, 0, g, 0, e, 2, d, 0, g, 0, c, 2,                                                               B, 2, d, 2, g, 0, b, 3, b, 3, cN, 0, A, 2,                                                         a, 2, b, 2, g, 2, a, 3, b, 2, w, 0, w, 0,                                                          B, 2, d, 0, g, 0, b, 3, b, 3, cN, 0, a, 2,                                                         a, 2, b, 2, g, 2, fS, 3, g, 2, g, 2};
+volatile char usmc = 0;
+volatile char ff = 0;
+volatile char ss = 0;
+volatile char mulan = 0;
+const int ffVictory[] = {a, 1, a, 1, a, 1, a, 2, fS, 0, gS, 0, aN, 0, gS, 1, aN, 2};
+
+const int mcHymn[] = {F, 0, A, 0, C_, 0, w, 0, C_, 0, w, 0, C_, 0, w, 0, C_, 0, w, 0, C_, 1, f, 0, C_, 0, w, 0, A, 0, AS, 0, C_, 0, w, 0, C_, 0, w, 0, AS, 0, G, 1, w, 0, F, 2, F, 0, w, 0, F, 0, A, 0, C_, 0, w, 0, C_, 0, w, 0, C_, 0, w, 0, C_, 0, w, 0, C_, 1, w, 0, f, 0, C_, 0, w, 0, A, 0, AS, 0, C_, 0, w, 0, C_, 0, w, 0, AS, 0, G, 1, w, 0, F, 2}; 
+
+// 120 bpm
+const int sallys_song[] = {e, 0, g, 0, a, 0, b, 0, e, 0, g, 0, e, 1, f, 2, f, 0, w, 0, f, 0, a, 0, b, 0, c, 0, a, 0, fS, 0, dS, 0, e, 2, e, 0, w, 0, b, 0, b, 0, c, 0, d, 0, g, 0, a, 0, b, 0, a, 2, a, 0, w, 0, a, 0, a, 0, b, 0, c, 0, a, 0, fS, 0, dS, 0, e, 2, e, 0, w, 0, b, 0, b, 0, c, 0, d, 0, g, 0, a, 0, b, 0, a, 2, a, 0, w, 0, a, 0, b, 0, c, 0, c, 2, b, 0, w, 0, fS, 0, g, 0, a, 0, a, 2, g, 2, w, 0, c, 0, a, 0, f, 0, e, 0, w, 0, e, 0, dS, 0, e, 0, fS, 0, g, 0, e, 2, e, 0, w, 0, e, 0, dS, 0, e, 0, fS, 0, g, 0, e, 2, eN, 0, w, 0, w, 0, w, 0,};
+// 95 bpm
+const int reflection_mulan[] = {C_, 0, CS, 0, DS, 2, w, 0, w, 0, C_, 0, DS, 0, DS, 2, DS, 0, GS, 2,  C_, 0, DS, 0, CS, 3, C_, 0, ASS, 2, CS, 0, CS, 0, CS, 3, DS, 0, C_, 0, ASS, 2,                                  C_, 0, CS, 0, DS, 2, C_, 0, CS, 0, DS, 0, GSS, 0, DS, 0, GSS, 0, AS, 2, w, 0, w, 0,                            C_, 0, CS, 0, DS, 2, w, 0, C_, 0, CS, 0, DS, 0, DS, 2, GSS, 0, C_, 0, DS, 0, CS, 0, C_, 3, ASS, 2, w, 0, w, 0,    CS, 0, CS, 0, CS, 0, DS, 0, C_, 0, ASS, 0, G, 2, w, 0,                                                    AS, 2, AS, 2, GSS, 0, AS, 2, c, 0, GSS, 2,                                                                fS, 2, GSS, 0, e, 2, DS, 2, GSS, 2, CS, 2, w, 0, w, 0,                                                   C_, 2, DS, 0, GSS, 0, c, 3, c, 3, cN, 0, AS, 0, GSS, 0, AS, 2, AS, 2, AS, 2, w, 0, w, 0,                     AS, 2, AS, 0, GSS, 0, AS, 0, c, 2, GSS, 2,                                                                fS, 0, GSS, 0, e, 2, DS, 0, GSS, 0, CS, 2,                                                               C_, 2, DS, 2, GSS, 0, c, 3, c, 3, cN, 0, ASS, 2,                                                         AS, 2, c, 2, GSS, 2, AS, 3, c, 2, w, 0, w, 0,                                                          C_, 2, DS, 0, GSS, 0, c, 3, c, 3, cN, 0, AS, 2,                                                         AS, 2, c, 2, GSS, 2, fS, 3, GSS, 2, GSS, 2};
+
 // intended for songs @ 120 bmp
 void
 __interrupt_vec(WDT_VECTOR) WDT(){ /* 250 interrupts / sec */
   static char beat_count = 0;
   static char ext = 0; // flag for extending note
-  static char shortPause = 0;
-  
-  if(beat_count == 124 && song_playing && ext == 0){
-    buzzer_set_period(0);
+  static float freq = 0;
+  static int duration = 0;
+  if(ss){
+    freq = sallys_song[song_index];
+    duration = sallys_song[song_index + 1];
   }
-  if((++beat_count == 125 && song_playing) || (++beat_count == 63 && shortPause == 1 && song_playing)){  /* typical target_tempo = 125  play beat at every 0.5 seconds */
-    float freq = 0;
-    int duration = 0;
-    if(shortPause == 1){
-      shortPause = 0;
-      buzzer_set_period(0);
-      __delay_cycles(500000);
-    }
-    if(ss == 1){
-      freq = sallys_song[song_index];
-      duration = sallys_song[song_index + 1];
-    }
-    else if(mulan == 1){
-      freq = reflection_mulan[song_index];
-      duration = reflection_mulan[song_index + 1];
-    }
+  if(mulan){
+    freq = reflection_mulan[song_index];
+    duration = reflection_mulan[song_index + 1];
+  }
+  if(ff){
+    freq = ffVictory[song_index];
+    duration = ffVictory[song_index + 1];
+  }
+  if(usmc){
+    freq = mcHymn[song_index];
+    duration = mcHymn[song_index + 1];
+  }
+  
+  //sallys song
+  /* typical target_tempo = 125  play beat at every 0.5 seconds */
+  if(beat_count == 125 && song_playing && ss){  
+
+    if(ext == 0){ buzzer_set_period(0);} // small break betwixt notes
+
     ext = 0;
     if(duration == 0){  // typical tempo
       buzzer_set_period(freq);
-      
     }
     else if(duration == 1){  // 8th note (small pause just b4 note)
       __delay_cycles(500000);
@@ -74,21 +96,98 @@ __interrupt_vec(WDT_VECTOR) WDT(){ /* 250 interrupts / sec */
       __delay_cycles(10000000);
       ext = 1;
     }
-    else if(duration == 3){ // small rest between notes
-      buzzer_set_period(freq);
-      shortPause = 1;
-    }
     beat_count = 0;
     song_index += 2;    
   }
+  //Reflection song
+  if(beat_count == 125 && song_playing && mulan){
+    if(ext == 0){ buzzer_set_period(0);} // small break betwixt notes
+
+    ext = 0;
+    if(duration == 0){  // typical tempo
+      buzzer_set_period(freq);
+    }
+    else if(duration == 1){  // 8th note (small pause just b4 note)
+      __delay_cycles(500000);
+      buzzer_set_period(freq);
+    }
+    else if(duration == 2){  // note must be extended
+      buzzer_set_period(freq);
+      __delay_cycles(10000000);
+      ext = 1;
+    }
+    beat_count = 0;
+    song_index += 2;    
+
+  }
+  //Final Fantasy Victory tune
+  if(beat_count == 70 && song_playing && ff){
+
+    if(ext == 0){ buzzer_set_period(0);} // small break betwixt notes
+    ext = 0;
+    if(duration == 0){
+      buzzer_set_period(freq);
+    }
+    if(duration == 1){ // rapid play & pause
+      buzzer_set_period(freq);
+      __delay_cycles(1000000);
+      buzzer_set_period(0);
+      beat_count = 25;
+      
+    }
+    if(duration == 2){ // extend note
+      buzzer_set_period(freq);
+      __delay_cycles(1000000);
+      //ext = 1;
+      beat_count = 20;
+    }
+    song_index += 2;
+  }
+
+  // Marine Corps Hymn
+  if(beat_count == 70 && song_playing && usmc){
+    buzzer_set_period(0);
+    if(duration == 0){ // quarter beat
+      buzzer_set_period(freq);
+    }
+    if(duration == 1){
+      buzzer_set_period(freq);
+      __delay_cycles(1000000);
+    }
+    if(duration == 2){
+      buzzer_set_period(freq);
+      __delay_cycles(5000000);
+    }
+    beat_count = 0;
+    song_index += 2;
+  }
+  beat_count++;
 }
 
 void play_s(int track){
   if(track == 1){
     ss = 1;
+    mulan = 0;
+    ff = 0;
+    usmc = 0;
   }
   else if(track == 2){
     mulan = 1;
+    ss = 0;
+    ff = 0;
+    usmc = 0;
+  }
+  else if(track == 3){
+    ff = 1;
+    ss = 0;
+    mulan = 0;
+    usmc = 0;
+  }
+  else if(track == 4){
+    usmc = 1;
+    ss = 0;
+    mulan = 0;
+    ff = 0;
   }
   song_playing = 1;
   song_index = 0;
@@ -106,7 +205,6 @@ void euroSiren(){
   P1OUT |= RED;
   unsigned int count = 0;
   while(1){
-
     if(count == 0){
       P1OUT ^= RED;
       P1OUT ^= GREEN;
@@ -156,12 +254,12 @@ void euroSiren(){
 /*     } */
 /*   } //end of 1st for loop */
 /* } */ 
-void play_melody(){
-  buzzer_set_volume(100);
-  for(int i = 0; i < melody_length; i++){
-    buzzer_set_period(melody[i]);
-    __delay_cycles(100000000);
-    buzzer_set_period(0);
-    __delay_cycles(1000000);
-  }
-}
+/* void play_melody(){ */
+/*   buzzer_set_volume(100); */
+/*   for(int i = 0; i < melody_length; i++){ */
+/*     buzzer_set_period(melody[i]); */
+/*     __delay_cycles(100000000); */
+/*     buzzer_set_period(0); */
+/*     __delay_cycles(1000000); */
+/*   } */
+/* } */
